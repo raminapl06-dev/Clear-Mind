@@ -74,6 +74,50 @@
 <style>
   :root {
     --ink: #0d0d0f;
+    /* dark mode override */
+  }
+  body.dark {
+    --ink: #eeeae3;
+    --paper: #0e0e11;
+    --cream: #18181f;
+    --sage: #5faa98;
+    --sage-light: #7ec4b4;
+    --amber: #e5a040;
+    --muted: #888680;
+    --border: #2c2c35;
+    --card: #16161e;
+  }
+  /* ── Settings panel ── */
+  .settings-panel { padding: 1.5rem; overflow-y: auto; max-width: 700px; }
+  .settings-panel h2 { font-size: 1.3rem; font-weight: 800; margin-bottom: 0.3rem; }
+  .settings-panel .sub { color: var(--muted); font-size: 0.875rem; margin-bottom: 1.5rem; }
+  .settings-section { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.2rem; margin-bottom: 1rem; }
+  .settings-section-title { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--sage); margin-bottom: 1rem; }
+  .settings-row { display: flex; align-items: center; justify-content: space-between; padding: 0.6rem 0; border-bottom: 1px solid var(--border); }
+  .settings-row:last-child { border-bottom: none; padding-bottom: 0; }
+  .settings-info .settings-label { font-size: 0.9rem; font-weight: 500; }
+  .settings-info .settings-desc { font-size: 0.78rem; color: var(--muted); margin-top: 1px; }
+  .toggle { width: 44px; height: 24px; border-radius: 999px; background: var(--border); cursor: pointer; position: relative; transition: background 0.2s; flex-shrink: 0; }
+  .toggle.on { background: var(--sage); }
+  .toggle-thumb { width: 18px; height: 18px; border-radius: 50%; background: #fff; position: absolute; top: 3px; left: 3px; transition: transform 0.2s; }
+  .toggle.on .toggle-thumb { transform: translateX(20px); }
+  .color-dot { width: 22px; height: 22px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; transition: all 0.15s; }
+  .color-dot.active { border-color: var(--ink); transform: scale(1.15); }
+  /* ── Study tools ── */
+  .tools-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
+  .tool-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.2rem; }
+  .tool-card h4 { font-size: 0.9rem; font-weight: 700; margin-bottom: 0.8rem; }
+  .tool-display { font-family: monospace; font-size: 2rem; font-weight: 700; color: var(--sage); text-align: center; padding: 0.8rem 0; letter-spacing: 0.05em; }
+  .tool-btns { display: flex; gap: 0.5rem; justify-content: center; flex-wrap: wrap; }
+  .tool-btn { padding: 0.35rem 0.8rem; border-radius: 999px; border: 1.5px solid var(--border); background: transparent; font-family: 'DM Sans', sans-serif; font-size: 0.8rem; font-weight: 500; cursor: pointer; color: var(--muted); transition: all 0.15s; }
+  .tool-btn:hover { background: var(--cream); color: var(--ink); }
+  .size-btn { width: 32px; height: 32px; border-radius: 8px; border: 1.5px solid var(--border); background: transparent; cursor: pointer; font-family: 'DM Sans', sans-serif; font-weight: 600; color: var(--muted); transition: all 0.15s; display: flex; align-items: center; justify-content: center; }
+  .size-btn.active { background: var(--ink); color: #fff; border-color: var(--ink); }
+  .focus-bar { height: 8px; border-radius: 999px; background: var(--border); overflow: hidden; margin: 0.6rem 0; }
+  .focus-bar-fill { height: 100%; background: var(--sage); border-radius: 999px; transition: width 0.5s linear; }
+  .pomodoro-label { font-size: 0.75rem; color: var(--muted); text-align: center; margin-top: 0.3rem; }
+  :root {
+    --ink: #0d0d0f;
     --paper: #f5f3ee;
     --cream: #ede9e0;
     --sage: #4a7c6f;
@@ -938,6 +982,7 @@
         <button class="app-nav-tab active" onclick="switchAppTab(this,'panel-tutor')">🧠 Tutor</button>
         <button class="app-nav-tab" onclick="switchAppTab(this,'panel-planner')">📅 Planner</button>
         <button class="app-nav-tab" onclick="switchAppTab(this,'panel-connect')">🔗 Connect</button>
+        <button class="app-nav-tab" onclick="switchAppTab(this,'panel-settings')">⚙️ Settings</button>
       </div>
     </div>
     <div class="user-avatar" id="userAvatar">S</div>
@@ -1116,6 +1161,127 @@
             <p style="color:var(--muted);font-size:0.85rem">Connect Gmail above to see school emails.</p>
           </div>
         </div>
+      </div>
+    </div>
+
+    <!-- ── SETTINGS PANEL ── -->
+    <div class="app-panel" id="panel-settings">
+      <div class="settings-panel">
+        <h2>Settings</h2>
+        <p class="sub">Customize ClearMind to work the way you do.</p>
+
+        <!-- Appearance -->
+        <div class="settings-section">
+          <div class="settings-section-title">🎨 Appearance</div>
+          <div class="settings-row">
+            <div class="settings-info">
+              <div class="settings-label">Dark mode</div>
+              <div class="settings-desc">Easy on the eyes at night</div>
+            </div>
+            <div class="toggle" id="darkToggle" onclick="toggleDarkMode()"><div class="toggle-thumb"></div></div>
+          </div>
+          <div class="settings-row">
+            <div class="settings-info">
+              <div class="settings-label">Font size</div>
+              <div class="settings-desc">Adjust text size across the app</div>
+            </div>
+            <div style="display:flex;gap:0.4rem">
+              <button class="size-btn" style="font-size:0.75rem" onclick="setFontSize(14, this)">A</button>
+              <button class="size-btn active" style="font-size:0.9rem" onclick="setFontSize(16, this)">A</button>
+              <button class="size-btn" style="font-size:1.1rem" onclick="setFontSize(18, this)">A</button>
+            </div>
+          </div>
+          <div class="settings-row">
+            <div class="settings-info">
+              <div class="settings-label">Accent color</div>
+              <div class="settings-desc">Pick your vibe</div>
+            </div>
+            <div style="display:flex;gap:0.5rem;align-items:center">
+              <div class="color-dot active" style="background:#4a7c6f" onclick="setAccent('#4a7c6f','#6aaa99',this)" title="Sage"></div>
+              <div class="color-dot" style="background:#3b82f6" onclick="setAccent('#3b82f6','#60a5fa',this)" title="Blue"></div>
+              <div class="color-dot" style="background:#8b5cf6" onclick="setAccent('#8b5cf6','#a78bfa',this)" title="Purple"></div>
+              <div class="color-dot" style="background:#ef4444" onclick="setAccent('#ef4444','#f87171',this)" title="Red"></div>
+              <div class="color-dot" style="background:#f59e0b" onclick="setAccent('#f59e0b','#fbbf24',this)" title="Amber"></div>
+              <div class="color-dot" style="background:#ec4899" onclick="setAccent('#ec4899','#f472b6',this)" title="Pink"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Study Tools -->
+        <div class="settings-section" style="margin-bottom:0.5rem">
+          <div class="settings-section-title">🛠️ Study Tools</div>
+        </div>
+        <div class="tools-grid">
+          <div class="tool-card">
+            <h4>⏱️ Stopwatch</h4>
+            <div class="tool-display" id="swDisplay">00:00:00</div>
+            <div class="tool-btns">
+              <button class="tool-btn" onclick="swStart()" id="swStartBtn">Start</button>
+              <button class="tool-btn" onclick="swPause()" id="swPauseBtn" style="display:none">Pause</button>
+              <button class="tool-btn" onclick="swReset()">Reset</button>
+              <button class="tool-btn" onclick="swLap()">Lap</button>
+            </div>
+            <div id="swLaps" style="margin-top:0.6rem;font-size:0.75rem;color:var(--muted);max-height:80px;overflow-y:auto"></div>
+          </div>
+
+          <div class="tool-card">
+            <h4>⏰ Timer</h4>
+            <div class="tool-display" id="timerDisplay">25:00</div>
+            <div class="tool-btns" style="margin-bottom:0.5rem">
+              <button class="tool-btn" onclick="setTimer(25)">25m</button>
+              <button class="tool-btn" onclick="setTimer(45)">45m</button>
+              <button class="tool-btn" onclick="setTimer(60)">60m</button>
+              <button class="tool-btn" onclick="setTimer(90)">90m</button>
+            </div>
+            <div class="tool-btns">
+              <button class="tool-btn" onclick="timerStart()" id="timerStartBtn">Start</button>
+              <button class="tool-btn" onclick="timerPause()" id="timerPauseBtn" style="display:none">Pause</button>
+              <button class="tool-btn" onclick="timerReset()">Reset</button>
+            </div>
+          </div>
+
+          <div class="tool-card">
+            <h4>🍅 Pomodoro</h4>
+            <div class="tool-display" id="pomDisplay">25:00</div>
+            <div class="focus-bar"><div class="focus-bar-fill" id="pomBar" style="width:100%"></div></div>
+            <div class="pomodoro-label" id="pomLabel">Focus session — press Start</div>
+            <div class="tool-btns" style="margin-top:0.5rem">
+              <button class="tool-btn" onclick="pomStart()" id="pomStartBtn">Start</button>
+              <button class="tool-btn" onclick="pomPause()" id="pomPauseBtn" style="display:none">Pause</button>
+              <button class="tool-btn" onclick="pomReset()">Reset</button>
+            </div>
+            <div style="font-size:0.72rem;color:var(--muted);text-align:center;margin-top:0.4rem" id="pomCount">Sessions completed: 0</div>
+          </div>
+
+          <div class="tool-card">
+            <h4>🎯 Daily Goal</h4>
+            <div style="text-align:center;margin:0.5rem 0">
+              <span style="font-size:2rem;font-weight:700;font-family:monospace;color:var(--sage)" id="goalDisplay">0</span>
+              <span style="font-size:1rem;color:var(--muted)"> / <span id="goalTarget">120</span> min</span>
+            </div>
+            <div class="focus-bar"><div class="focus-bar-fill" id="goalBar" style="width:0%"></div></div>
+            <div class="tool-btns" style="margin-top:0.6rem">
+              <button class="tool-btn" onclick="addGoalTime(15)">+15m</button>
+              <button class="tool-btn" onclick="addGoalTime(30)">+30m</button>
+              <button class="tool-btn" onclick="addGoalTime(45)">+45m</button>
+              <button class="tool-btn" onclick="resetGoal()">Reset</button>
+            </div>
+            <div style="font-size:0.72rem;color:var(--muted);text-align:center;margin-top:0.4rem" id="goalMsg">Keep going! 💪</div>
+          </div>
+        </div>
+
+        <!-- Account -->
+        <div class="settings-section">
+          <div class="settings-section-title">👤 Account</div>
+          <div class="settings-row">
+            <div class="settings-info">
+              <div class="settings-label" id="settingsUserName">Student</div>
+              <div class="settings-desc">Signed in</div>
+            </div>
+            <button class="btn btn-outline" style="font-size:0.8rem;padding:0.4rem 1rem" onclick="if(confirm('Sign out?')) window.firebaseSignOut()">Sign out</button>
+          </div>
+        </div>
+
       </div>
     </div>
 
@@ -1323,6 +1489,8 @@ window.enterApp = function(name) {
   document.getElementById('app-view').classList.add('active');
   initCalendar();
   setTimeout(checkGoogleConnectionStatus, 300);
+  const nameEl = document.getElementById('settingsUserName');
+  if (nameEl) nameEl.textContent = userName;
 };
 
 window.goLanding = function() {
@@ -1804,6 +1972,204 @@ function checkGoogleConnectionStatus() {
     if (err !== 'not_configured') addAIMessage('⚠️ Google connection failed: ' + escHtml(err) + '. Please try again.');
     window.history.replaceState({}, '', '/');
   }
+}
+
+// ═══════════════════════════════════════
+// SETTINGS — Dark mode, font, accent
+// ═══════════════════════════════════════
+function toggleDarkMode() {
+  const isDark = document.body.classList.toggle('dark');
+  const toggle = document.getElementById('darkToggle');
+  if (toggle) toggle.classList.toggle('on', isDark);
+  localStorage.setItem('cm_dark', isDark);
+}
+
+function setFontSize(size, btn) {
+  document.body.style.fontSize = size + 'px';
+  document.querySelectorAll('.size-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  localStorage.setItem('cm_font', size);
+}
+
+function setAccent(color, light, dot) {
+  document.documentElement.style.setProperty('--sage', color);
+  document.documentElement.style.setProperty('--sage-light', light);
+  document.querySelectorAll('.color-dot').forEach(d => d.classList.remove('active'));
+  if (dot) dot.classList.add('active');
+  localStorage.setItem('cm_accent', color);
+  localStorage.setItem('cm_accent_light', light);
+}
+
+function loadSavedSettings() {
+  const dark = localStorage.getItem('cm_dark') === 'true';
+  if (dark) {
+    document.body.classList.add('dark');
+    const t = document.getElementById('darkToggle');
+    if (t) t.classList.add('on');
+  }
+  const font = localStorage.getItem('cm_font');
+  if (font) document.body.style.fontSize = font + 'px';
+  const accent = localStorage.getItem('cm_accent');
+  const accentLight = localStorage.getItem('cm_accent_light');
+  if (accent) {
+    document.documentElement.style.setProperty('--sage', accent);
+    document.documentElement.style.setProperty('--sage-light', accentLight || accent);
+    document.querySelectorAll('.color-dot').forEach(d => {
+      const bg = d.style.background;
+      d.classList.toggle('active', bg === accent || bg.replace(/\s/g,'') === accent.replace(/\s/g,''));
+    });
+  }
+}
+loadSavedSettings();
+
+// ═══════════════════════════════════════
+// STOPWATCH
+// ═══════════════════════════════════════
+let swInterval = null, swTime = 0, swRunning = false, swLapCount = 0;
+
+function swFormatTime(ms) {
+  const h = Math.floor(ms / 3600000), m = Math.floor((ms % 3600000) / 60000), s = Math.floor((ms % 60000) / 1000);
+  return String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+}
+function swStart() {
+  if (swRunning) return;
+  swRunning = true;
+  const startTime = Date.now() - swTime;
+  swInterval = setInterval(() => {
+    swTime = Date.now() - startTime;
+    document.getElementById('swDisplay').textContent = swFormatTime(swTime);
+  }, 100);
+  document.getElementById('swStartBtn').style.display = 'none';
+  document.getElementById('swPauseBtn').style.display = 'inline-flex';
+}
+function swPause() {
+  clearInterval(swInterval); swRunning = false;
+  document.getElementById('swStartBtn').style.display = 'inline-flex';
+  document.getElementById('swPauseBtn').style.display = 'none';
+}
+function swReset() {
+  swPause(); swTime = 0; swLapCount = 0;
+  document.getElementById('swDisplay').textContent = '00:00:00';
+  document.getElementById('swLaps').innerHTML = '';
+}
+function swLap() {
+  if (!swRunning) return;
+  swLapCount++;
+  const laps = document.getElementById('swLaps');
+  const div = document.createElement('div');
+  div.textContent = 'Lap ' + swLapCount + ': ' + swFormatTime(swTime);
+  div.style.padding = '2px 0';
+  laps.insertBefore(div, laps.firstChild);
+}
+
+// ═══════════════════════════════════════
+// COUNTDOWN TIMER
+// ═══════════════════════════════════════
+let timerInterval = null, timerSecs = 25 * 60, timerRunning = false, timerTotal = 25 * 60;
+
+function fmtTimer(s) {
+  const m = Math.floor(s / 60), sec = s % 60;
+  return String(m).padStart(2,'0') + ':' + String(sec).padStart(2,'0');
+}
+function setTimer(mins) {
+  timerReset();
+  timerSecs = mins * 60; timerTotal = timerSecs;
+  document.getElementById('timerDisplay').textContent = fmtTimer(timerSecs);
+}
+function timerStart() {
+  if (timerRunning || timerSecs <= 0) return;
+  timerRunning = true;
+  timerInterval = setInterval(() => {
+    timerSecs--;
+    document.getElementById('timerDisplay').textContent = fmtTimer(timerSecs);
+    if (timerSecs <= 0) { timerReset(); playBeep(); alert('⏰ Time is up!'); }
+  }, 1000);
+  document.getElementById('timerStartBtn').style.display = 'none';
+  document.getElementById('timerPauseBtn').style.display = 'inline-flex';
+}
+function timerPause() {
+  clearInterval(timerInterval); timerRunning = false;
+  document.getElementById('timerStartBtn').style.display = 'inline-flex';
+  document.getElementById('timerPauseBtn').style.display = 'none';
+}
+function timerReset() {
+  timerPause(); timerSecs = timerTotal;
+  document.getElementById('timerDisplay').textContent = fmtTimer(timerSecs);
+}
+
+// ═══════════════════════════════════════
+// POMODORO
+// ═══════════════════════════════════════
+let pomInterval = null, pomSecs = 25 * 60, pomRunning = false, pomIsBreak = false, pomSessions = 0;
+const POM_FOCUS = 25 * 60, POM_SHORT = 5 * 60, POM_LONG = 15 * 60;
+
+function pomStart() {
+  if (pomRunning) return;
+  pomRunning = true;
+  pomInterval = setInterval(() => {
+    pomSecs--;
+    const total = pomIsBreak ? (pomSessions % 4 === 0 ? POM_LONG : POM_SHORT) : POM_FOCUS;
+    document.getElementById('pomDisplay').textContent = fmtTimer(pomSecs);
+    document.getElementById('pomBar').style.width = ((pomSecs / total) * 100) + '%';
+    if (pomSecs <= 0) {
+      if (!pomIsBreak) {
+        pomSessions++;
+        document.getElementById('pomCount').textContent = 'Sessions completed: ' + pomSessions;
+        pomIsBreak = true;
+        pomSecs = pomSessions % 4 === 0 ? POM_LONG : POM_SHORT;
+        document.getElementById('pomLabel').textContent = pomSessions % 4 === 0 ? '🎉 Long break (15 min)!' : '☕ Short break (5 min)!';
+      } else {
+        pomIsBreak = false;
+        pomSecs = POM_FOCUS;
+        document.getElementById('pomLabel').textContent = '🎯 Focus session — go!';
+      }
+      playBeep();
+    }
+  }, 1000);
+  document.getElementById('pomStartBtn').style.display = 'none';
+  document.getElementById('pomPauseBtn').style.display = 'inline-flex';
+  document.getElementById('pomLabel').textContent = '🎯 Focus session — go!';
+}
+function pomPause() {
+  clearInterval(pomInterval); pomRunning = false;
+  document.getElementById('pomStartBtn').style.display = 'inline-flex';
+  document.getElementById('pomPauseBtn').style.display = 'none';
+}
+function pomReset() {
+  pomPause(); pomSecs = POM_FOCUS; pomIsBreak = false; pomSessions = 0;
+  document.getElementById('pomDisplay').textContent = fmtTimer(pomSecs);
+  document.getElementById('pomBar').style.width = '100%';
+  document.getElementById('pomLabel').textContent = 'Focus session — press Start';
+  document.getElementById('pomCount').textContent = 'Sessions completed: 0';
+}
+
+function playBeep() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = ctx.createOscillator(), gain = ctx.createGain();
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.frequency.value = 880; gain.gain.value = 0.3;
+    osc.start(); osc.stop(ctx.currentTime + 0.3);
+  } catch(e) {}
+}
+
+// ═══════════════════════════════════════
+// DAILY GOAL
+// ═══════════════════════════════════════
+let goalMins = 0, goalTargetMins = 120;
+
+function addGoalTime(mins) {
+  goalMins = Math.min(goalMins + mins, goalTargetMins * 2);
+  updateGoal();
+}
+function resetGoal() { goalMins = 0; updateGoal(); }
+function updateGoal() {
+  const pct = Math.min((goalMins / goalTargetMins) * 100, 100);
+  document.getElementById('goalDisplay').textContent = goalMins;
+  document.getElementById('goalBar').style.width = pct + '%';
+  const msgs = ['Keep going! 💪', 'You got this! 🔥', 'Halfway there! 🌟', 'Almost done! ⚡', 'Goal crushed! 🎉'];
+  document.getElementById('goalMsg').textContent =
+    goalMins >= goalTargetMins ? '🎉 Daily goal crushed!' : msgs[Math.min(Math.floor(pct / 25), 4)];
 }
 </script>
 </body>
