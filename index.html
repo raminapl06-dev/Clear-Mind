@@ -921,7 +921,7 @@
         <button class="app-nav-tab" onclick="switchAppTab(this,'panel-settings')">⚙️ Settings</button>
       </div>
     </div>
-    <div class="user-avatar" id="userAvatar">S</div>
+    <div class="user-avatar" id="userAvatar" onclick="if(confirm('Sign out?')) window.firebaseSignOut()" title="Click to sign out">S</div>
   </nav>
 
   <div class="app-content">
@@ -1055,14 +1055,7 @@
             <button class="btn btn-primary" id="btn-classroom" onclick="window.location.href='classroom.html'" style="font-size:0.85rem;padding:0.55rem 1.2rem">Connect Classroom</button>
           </div>
 
-          <div class="int-card-full" id="card-gmail">
-            <div class="int-card-header">
-              <div class="int-card-logo" style="background:#fce4ec">✉️</div>
-              <h4>Gmail</h4>
-            </div>
-            <p>Scans your school emails for assignment details, schedule changes, and teacher announcements — then adds them to your study plan.</p>
-            <button class="btn btn-primary" id="btn-gmail" onclick="window.location.href='gmail.html'" style="font-size:0.85rem;padding:0.55rem 1.2rem">Connect Gmail</button>
-          </div>
+
 
           <div class="int-card-full" id="card-calendar">
             <div class="int-card-header">
@@ -1094,12 +1087,7 @@
           </div>
         </div>
 
-        <div style="margin-top:1.5rem;max-width:700px">
-          <h3 style="font-size:0.95rem;font-weight:700;margin-bottom:0.8rem">✉️ Recent School Emails</h3>
-          <div id="gmail-data" class="upcoming-list">
-            <p style="color:var(--muted);font-size:0.85rem">Connect Gmail above to see school emails.</p>
-          </div>
-        </div>
+
       </div>
     </div>
 
@@ -1414,15 +1402,32 @@ function escHtml(t) {
 }
 
 async function callClearMindAI(userMessage) {
+  const systemPrompt = `You are ClearMind, a warm and encouraging AI tutor for high school and college students. You are currently helping with: ${currentSubject}.
+- NEVER just give the answer. Always TEACH the concept first.
+- Use simple, relatable analogies. Try a different angle if they do not get it.
+- Break problems into small numbered steps.
+- Be encouraging but honest. Gently correct mistakes.
+- Use bold (**like this**) for key terms or formulas.
+- Keep it conversational and friendly.
+- End with a follow-up question or challenge.
+- For math: show every step. For essays: give specific feedback. For science: use real-world examples. For history: connect it to today.
+- Use 1-2 emojis max per message.`;
+
   try {
     const response = await fetch('https://clearmind-api.shauryapandey2325.workers.dev/api/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message: userMessage, subject: currentSubject })
+      body: JSON.stringify({
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userMessage }
+        ]
+      })
     });
+    removeTyping();
     if (!response.ok) {
       const err = await response.json().catch(()=>({}));
-      addAIMessage('Error ' + response.status + ': ' + (err.error || 'Something went wrong. Try again.'));
+      addAIMessage('Error ' + response.status + ': ' + JSON.stringify(err.error || 'Something went wrong.'));
       return;
     }
     const data = await response.json();
@@ -1438,7 +1443,7 @@ async function callClearMindAI(userMessage) {
     }
   } catch (err) {
     console.error('Chat error:', err);
-    addAIMessage('Connection error. Make sure you are on the deployed Netlify URL, not a local file.');
+    addAIMessage('Connection error: ' + err.message);
   }
 }
 
@@ -1805,10 +1810,15 @@ function toggleDarkMode() {
 }
 
 function setFontSize(size, btn) {
+  document.documentElement.style.setProperty('font-size', size + 'px');
   document.body.style.fontSize = size + 'px';
   document.querySelectorAll('.size-btn').forEach(b => b.classList.remove('active'));
   if (btn) btn.classList.add('active');
   localStorage.setItem('cm_font', size);
+  // Force reflow
+  document.querySelectorAll('.msg-bubble, .full-chat-input textarea, .subject-item').forEach(el => {
+    el.style.fontSize = '';
+  });
 }
 
 function setAccent(color, light, dot) {
