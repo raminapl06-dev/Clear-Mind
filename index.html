@@ -1019,7 +1019,7 @@
         <button class="app-nav-tab" onclick="switchAppTab(this,'panel-settings')">⚙️ Settings</button>
       </div>
     </div>
-    <div class="user-avatar" id="userAvatar" onclick="if(confirm('Sign out?')) window.firebaseSignOut()" title="Click to sign out">S</div>
+    <div class="user-avatar" id="userAvatar" onclick="if(confirm('Sign out?')) window.firebaseSignOut()" title="Click to sign out" style="cursor:pointer">S</div>
   </nav>
 
   <div class="app-content">
@@ -1406,20 +1406,19 @@ function switchModal(type) {
   document.getElementById('modal-login').style.display = type==='login' ? 'block' : 'none';
   document.getElementById('modal-signup').style.display = type==='signup' ? 'block' : 'none';
 }
-function demoLogin() {
-  const name = document.getElementById('signup-name')?.value || document.getElementById('login-email')?.value.split('@')[0] || 'Student';
-  enterApp(name || 'Student');
-}
-function demoGoogleLogin() { enterApp('Student'); }
+// Auth handled by Firebase module above
 
 window.enterApp = function(name) {
   userName = name || 'Student';
   const initials = userName.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
   document.getElementById('userAvatar').textContent = initials;
+  const su = document.getElementById('settingsUserName');
+  if (su) su.textContent = userName;
   closeModal();
   document.getElementById('landing-view').classList.add('hidden');
   document.getElementById('app-view').classList.add('active');
   initCalendar();
+  loadSavedSettings();
   setTimeout(checkGoogleConnectionStatus, 300);
 }
 
@@ -1590,18 +1589,19 @@ Respond in this EXACT JSON format (no markdown, no extra text):
 }`;
 
   try {
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
+    const response = await fetch('https://clearmind-api.shauryapandey2325.workers.dev/api/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 1000,
-        messages: [{ role: 'user', content: prompt }]
+        messages: [
+          { role: 'system', content: 'You are a study planner AI. Always respond with valid JSON only. No markdown, no extra text, just the raw JSON object.' },
+          { role: 'user', content: prompt }
+        ]
       })
     });
 
     const data = await response.json();
-    const raw = data.content?.[0]?.text || '';
+    const raw = data.reply || '';
 
     let plan;
     try {
@@ -1713,7 +1713,6 @@ function renderCalendar() {
 
   grid.innerHTML = '';
 
-  let cellCount = 0;
   const totalCells = Math.ceil((firstDay + daysInMonth) / 7) * 7;
 
   for (let i = 0; i < totalCells; i++) {
